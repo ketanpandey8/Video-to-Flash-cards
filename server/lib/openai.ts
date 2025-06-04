@@ -58,28 +58,23 @@ Respond with JSON in this exact format:
   } catch (error) {
     console.error("Failed to generate flashcards:", error);
     
-    // Fallback flashcards in case of API failure
-    return [
-      {
-        question: "What are the three main types of machine learning mentioned in the video?",
-        answer: "The three main types are supervised learning, unsupervised learning, and reinforcement learning."
-      },
-      {
-        question: "How does supervised learning work?",
-        answer: "Supervised learning uses labeled training data where the algorithm learns from input-output pairs to make predictions on new data."
-      },
-      {
-        question: "What is the key characteristic of unsupervised learning?",
-        answer: "Unsupervised learning works with unlabeled data to discover hidden patterns, structures, or relationships without predefined correct answers."
-      },
-      {
-        question: "Give an example of where reinforcement learning is commonly used.",
-        answer: "Reinforcement learning is commonly used in game playing and robotics applications."
-      },
-      {
-        question: "What is machine learning?",
-        answer: "Machine learning is a subset of artificial intelligence that enables computers to learn and make decisions from data without being explicitly programmed for every possible scenario."
+    // Check if it's an API key issue
+    if (error instanceof Error) {
+      if (error.message.includes("Incorrect API key") || error.message.includes("401")) {
+        console.error("OpenAI API Key Error: Please check your OPEN_API_VIDTUT secret");
+        throw new Error("Invalid OpenAI API key. Please check your OPEN_API_VIDTUT secret in Replit.");
       }
-    ];
+      if (error.message.includes("quota") || error.message.includes("billing")) {
+        console.error("OpenAI API Quota Error:", error.message);
+        throw new Error("OpenAI API quota exceeded. Please check your billing.");
+      }
+      if (error.message.includes("rate limit")) {
+        console.error("OpenAI API Rate Limit Error:", error.message);
+        throw new Error("OpenAI API rate limit exceeded. Please try again later.");
+      }
+    }
+    
+    // For other errors, throw them to be handled by the caller
+    throw new Error(`Failed to generate flashcards: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }

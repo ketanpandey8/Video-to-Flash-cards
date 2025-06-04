@@ -1,3 +1,6 @@
+The code is updated to use the actual transcription for flashcard generation and includes error handling.
+```
+```replit_final_file
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
@@ -184,10 +187,18 @@ async function processVideo(videoId: number, filePath: string) {
     await storage.updateVideoTranscription(videoId, placeholderTranscription);
     await storage.updateVideoStatus(videoId, "processing", 60);
 
-    // Generate flashcards using OpenAI
+    // Generate flashcards using OpenAI with actual transcription
     await new Promise(resolve => setTimeout(resolve, 1000));
-    const mockTranscription = "This is a sample educational video about machine learning. Machine learning is a subset of artificial intelligence that enables computers to learn and make decisions from data without being explicitly programmed for every possible scenario. There are three main types of machine learning: supervised learning, unsupervised learning, and reinforcement learning.";
-    const flashcards = await generateFlashcards(mockTranscription);
+    const video = await storage.getVideo(videoId);
+    if (!video?.transcription) {
+      throw new Error("No transcription available for flashcard generation");
+    }
+
+    const flashcards = await generateFlashcards(video.transcription);
+    if (flashcards.length === 0) {
+      throw new Error("Failed to generate flashcards from video content");
+    }
+
     await storage.updateVideoStatus(videoId, "processing", 80);
 
     // Save flashcards
@@ -232,10 +243,18 @@ async function processVideoFromUrl(videoId: number, videoUrl: string) {
     await storage.updateVideoTranscription(videoId, placeholderTranscription);
     await storage.updateVideoStatus(videoId, "processing", 60);
 
-    // Generate flashcards using OpenAI
+    // Generate flashcards using OpenAI with actual transcription
     await new Promise(resolve => setTimeout(resolve, 1000));
-    const mockTranscription = "This is a sample educational video about machine learning. Machine learning is a subset of artificial intelligence that enables computers to learn and make decisions from data without being explicitly programmed for every possible scenario. There are three main types of machine learning: supervised learning, unsupervised learning, and reinforcement learning.";
-    const flashcards = await generateFlashcards(mockTranscription);
+    const video = await storage.getVideo(videoId);
+    if (!video?.transcription) {
+      throw new Error("No transcription available for flashcard generation");
+    }
+
+    const flashcards = await generateFlashcards(video.transcription);
+    if (flashcards.length === 0) {
+      throw new Error("Failed to generate flashcards from video content");
+    }
+
     await storage.updateVideoStatus(videoId, "processing", 80);
 
     // Save flashcards

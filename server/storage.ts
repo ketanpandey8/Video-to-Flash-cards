@@ -53,12 +53,15 @@ export class MemStorage implements IStorage {
     return this.videos.get(id);
   }
 
-  async updateVideoStatus(id: number, status: string, progress?: number): Promise<void> {
+  async updateVideoStatus(id: number, status: string, progress?: number, errorMessage?: string): Promise<void> {
     const video = this.videos.get(id);
     if (video) {
       video.status = status;
       if (progress !== undefined) {
         video.processingProgress = progress;
+      }
+      if (errorMessage) {
+        (video as any).errorMessage = errorMessage;
       }
       this.videos.set(id, video);
     }

@@ -31,6 +31,34 @@ export default function ProcessingSection({ videoId, onComplete }: ProcessingSec
     }
   }, [status, onComplete]);
 
+  // Show error state
+  if (status === "failed") {
+    const errorMessage = (video as any)?.errorMessage || "An unknown error occurred during processing";
+    
+    return (
+      <div className="mb-12">
+        <div className="bg-white rounded-2xl shadow-lg p-8 max-w-4xl mx-auto">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i className="fas fa-exclamation-triangle text-2xl text-red-600"></i>
+            </div>
+            <h3 className="text-2xl font-bold text-slate-900 mb-2">Processing Failed</h3>
+            <p className="text-slate-600 mb-4">We encountered an error while processing your video:</p>
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+              <p className="text-red-800 text-sm">{errorMessage}</p>
+            </div>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const getProcessingSteps = () => {
     const steps = [
       { label: "Video uploaded successfully", completed: progress >= 10 },
