@@ -1,5 +1,7 @@
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Progress } from "./ui/progress";
+import VideoPlayer from "./video-player";
 
 interface ProcessingSectionProps {
   videoId: number;
@@ -52,7 +54,7 @@ export default function ProcessingSection({ videoId, onComplete }: ProcessingSec
           <h3 className="text-2xl font-bold text-slate-900 mb-2">Processing Your Video</h3>
           <p className="text-slate-600">AI is analyzing the content and generating flashcards...</p>
         </div>
-        
+
         {/* Progress Bar */}
         <div className="mb-6">
           <div className="flex justify-between items-center mb-2">
@@ -66,7 +68,7 @@ export default function ProcessingSection({ videoId, onComplete }: ProcessingSec
             ></div>
           </div>
         </div>
-        
+
         {/* Processing Steps */}
         <div className="space-y-4">
           {steps.map((step, index) => (

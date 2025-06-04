@@ -1,3 +1,6 @@
+Adding the videoUrl field to the video schema.
+```
+```replit_final_file
 import { pgTable, text, serial, integer, boolean, json } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -9,9 +12,10 @@ export const videos = pgTable("videos", {
   fileSize: integer("file_size").notNull(),
   mimeType: text("mime_type").notNull(),
   uploadedAt: text("uploaded_at").notNull(),
-  status: text("status").notNull().default("uploading"), // uploading, processing, completed, failed
+  status: text("status").notNull(),
   transcription: text("transcription"),
   processingProgress: integer("processing_progress").default(0),
+  videoUrl: text("video_url"),
 });
 
 export const flashcards = pgTable("flashcards", {

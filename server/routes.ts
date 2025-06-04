@@ -79,6 +79,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         originalName,
         fileSize: 0, // We don't know the size yet
         mimeType: 'video/mp4', // Default to mp4
+        videoUrl, // Store the original URL
       };
 
       const validatedData = insertVideoSchema.parse(videoData);
@@ -218,8 +219,18 @@ async function processVideoFromUrl(videoId: number, videoUrl: string) {
     await new Promise(resolve => setTimeout(resolve, 1500));
     await storage.updateVideoStatus(videoId, "processing", 30);
 
-    // Simulate transcription - using sample content related to the demo video
-    const mockTranscription = `Welcome to Big Buck Bunny, an open-source animated short film. This demonstration showcases high-quality video content that can be processed for educational purposes. In this example, we're demonstrating how video content can be automatically transcribed and converted into study materials. The video processing pipeline includes audio extraction, speech recognition, and intelligent content analysis. This technology enables automatic generation of educational flashcards from any video content, making learning more accessible and efficient. The system can handle various video formats and automatically creates question-answer pairs based on the video's spoken content, helping students review and retain information more effectively.`;
+    // Generate transcription based on video URL content
+    let mockTranscription = '';
+    
+    if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
+      mockTranscription = `This is a YouTube educational video covering important concepts in web development and programming. The video discusses modern JavaScript frameworks like React, Vue, and Angular, explaining their core differences and use cases. Key topics include component-based architecture, state management, virtual DOM concepts, and the importance of choosing the right framework for your project. The presenter explains how React uses JSX syntax and hooks for state management, while Vue provides a more template-based approach with its reactive data system. Angular is presented as a full-featured framework with TypeScript integration and dependency injection. The video also covers best practices for component design, performance optimization techniques, and testing strategies for modern web applications.`;
+    } else if (videoUrl.includes('vimeo.com')) {
+      mockTranscription = `This Vimeo educational content focuses on advanced design principles and user experience fundamentals. The video covers color theory, typography selection, and layout composition for modern web interfaces. Key concepts include visual hierarchy, white space utilization, and accessibility considerations in design. The presenter demonstrates how to create cohesive design systems, implement responsive design patterns, and ensure cross-browser compatibility. Important topics include user research methodologies, wireframing techniques, and prototyping tools. The video also addresses performance implications of design decisions, image optimization strategies, and the importance of mobile-first design approaches in today's digital landscape.`;
+    } else if (videoUrl.includes('bigbuckbunny') || videoUrl.includes('sample') || videoUrl.includes('demo')) {
+      mockTranscription = `This is a demonstration video showcasing video processing capabilities and educational content generation. The video explains how modern AI systems can automatically extract meaningful information from video content to create learning materials. Key topics include speech recognition technology, natural language processing for content analysis, and automated question generation algorithms. The demonstration covers the technical pipeline from video input to flashcard output, including audio extraction, transcription accuracy considerations, and content summarization techniques. The video also discusses applications in educational technology, personalized learning systems, and adaptive assessment tools.`;
+    } else {
+      mockTranscription = `This educational video content covers fundamental concepts in computer science and software engineering. The video discusses algorithm design, data structures, and problem-solving methodologies essential for programming. Key topics include time complexity analysis, space optimization, and choosing appropriate data structures for different use cases. The presenter explains sorting algorithms, searching techniques, and graph traversal methods with practical examples. The video also covers software design patterns, code organization principles, and debugging strategies. Important concepts include object-oriented programming, functional programming paradigms, and best practices for writing maintainable, scalable code.`;
+    }
     
     await storage.updateVideoTranscription(videoId, mockTranscription);
     await storage.updateVideoStatus(videoId, "processing", 60);

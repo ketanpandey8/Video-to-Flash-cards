@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import VideoPlayer from "./video-player";
 import { motion } from "framer-motion";
 
 interface StudyInterfaceProps {
@@ -11,6 +12,16 @@ export default function StudyInterface({ videoId, onComplete }: StudyInterfacePr
   const [isFlipped, setIsFlipped] = useState(false);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const queryClient = useQueryClient();
+
+  // Fetch video data
+  const { data: videoData } = useQuery({
+    queryKey: ["/api/videos", videoId],
+    queryFn: async () => {
+      const response = await fetch(`/api/videos/${videoId}`);
+      if (!response.ok) throw new Error("Failed to fetch video");
+      return response.json();
+    },
+  });
 
   // Fetch flashcards
   const { data: flashcardsData } = useQuery({
@@ -139,13 +150,28 @@ export default function StudyInterface({ videoId, onComplete }: StudyInterfacePr
   return (
     <div>
       {/* Study Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
-        <div>
+      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-8 gap-6">
+        <div className="flex-1">
           <h2 className="text-2xl font-bold text-slate-900 mb-2">Video Study Session</h2>
-          <p className="text-slate-600">
+          <p className="text-slate-600 mb-4">
             {flashcards.length} flashcards • Study at your own pace
           </p>
+          {videoData?.video?.originalName && (
+            <p className="text-sm text-slate-500">
+              Video: {videoData.video.originalName}
+            </p>
+          )}
         </div>
+        
+        {/* Video Player */}
+        {videoData?.video?.videoUrl && (
+          <div className="flex-1 max-w-md">
+            <VideoPlayer 
+              videoUrl={videoData.video.videoUrl} 
+              className="w-full h-48"
+            />
+          </div>
+        )}
         <div className="flex items-center space-x-4 mt-4 lg:mt-0">
           <div className="bg-white rounded-lg px-4 py-2 shadow-sm border border-slate-200">
             <span className="text-sm text-slate-600">Progress: </span>
