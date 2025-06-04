@@ -1,4 +1,3 @@
-
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
@@ -191,7 +190,7 @@ async function processVideo(videoId: number, filePath: string) {
     // Extract audio from video using FFmpeg
     const audioPath = `uploads/audio_${videoId}.wav`;
     const ffmpegCommand = `ffmpeg -i "${filePath}" -vn -acodec pcm_s16le -ar 16000 -ac 1 "${audioPath}"`;
-    
+
     try {
       const { exec } = require('child_process');
       await new Promise((resolve, reject) => {
@@ -208,7 +207,7 @@ async function processVideo(videoId: number, filePath: string) {
       // Transcribe audio using OpenAI Whisper
       const fs = require('fs');
       const audioFile = fs.createReadStream(audioPath);
-      
+
       const openai = new (require('openai').default)({
         apiKey: process.env.OPEN_API_VIDTUT || "default_key"
       });
@@ -239,6 +238,11 @@ async function processVideo(videoId: number, filePath: string) {
     const video = await storage.getVideo(videoId);
     if (!video?.transcription) {
       throw new Error("No transcription available for flashcard generation");
+    }
+
+    // Validate transcription quality before generating flashcards
+    if (video.transcription.length < 50 || video.transcription.includes("processing failed") || video.transcription.includes("error")) {
+      throw new Error("Transcription quality is too low for meaningful flashcard generation");
     }
 
     const flashcards = await generateFlashcards(video.transcription);
@@ -320,7 +324,7 @@ async function processVideoFromUrl(videoId: number, videoUrl: string) {
         // Transcribe with Whisper
         const fs = require('fs');
         const audioFile = fs.createReadStream(audioPath);
-        
+
         const openai = new (require('openai').default)({
           apiKey: process.env.OPEN_API_VIDTUT || "default_key"
         });
@@ -360,6 +364,11 @@ async function processVideoFromUrl(videoId: number, videoUrl: string) {
     const video = await storage.getVideo(videoId);
     if (!video?.transcription) {
       throw new Error("No transcription available for flashcard generation");
+    }
+
+    // Validate transcription quality before generating flashcards
+    if (video.transcription.length < 50 || video.transcription.includes("processing failed") || video.transcription.includes("error")) {
+      throw new Error("Transcription quality is too low for meaningful flashcard generation");
     }
 
     const flashcards = await generateFlashcards(video.transcription);

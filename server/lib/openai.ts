@@ -11,6 +11,15 @@ export interface FlashcardPair {
 }
 
 export async function generateFlashcards(transcription: string): Promise<FlashcardPair[]> {
+  // Validate input transcription
+  if (!transcription || transcription.length < 50) {
+    throw new Error("Transcription is too short to generate meaningful flashcards");
+  }
+  
+  if (transcription.toLowerCase().includes("error") || transcription.toLowerCase().includes("failed")) {
+    throw new Error("Cannot generate flashcards from error messages or failed transcriptions");
+  }
+
   try {
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
