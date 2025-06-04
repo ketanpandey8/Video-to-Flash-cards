@@ -1,6 +1,4 @@
-The code is updated to use the actual transcription for flashcard generation and includes error handling.
-```
-```replit_final_file
+
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
