@@ -7,6 +7,7 @@ import path from "path";
 import fs from "fs";
 import { insertVideoSchema, insertStudySessionSchema } from "@shared/schema";
 import { generateFlashcards } from "./lib/openai";
+import { authMiddleware, requireAuth } from "./auth";
 
 // Configure multer for file uploads
 const upload = multer({
@@ -25,9 +26,20 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Add auth middleware to all routes
+  app.use(authMiddleware);
+
+  // Get current user info
+  app.get("/api/user", (req, res) => {
+    if (req.user) {
+      res.json({ user: req.user });
+    } else {
+      res.json({ user: null });
+    }
+  });
 
   // Upload video endpoint
-  app.post("/api/videos/upload", upload.single('video'), async (req, res) => {
+  app.post("/api/videos/upload", requireAuth, upload.single('video'), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No video file provided" });
@@ -54,7 +66,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Upload video from URL endpoint
-  app.post("/api/videos/upload-url", async (req, res) => {
+  app.post("/api/videos/upload-url", requireAuth, async (req, res) => {
     try {
       const { videoUrl } = req.body;
 

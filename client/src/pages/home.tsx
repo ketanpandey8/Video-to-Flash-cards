@@ -30,45 +30,34 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-gray-50">
       <Header />
-      
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {currentState === "upload" && (
-          <UploadSection onVideoUploaded={handleVideoUploaded} />
-        )}
-        
-        {currentState === "processing" && currentVideoId && (
-          <ProcessingSection 
-            videoId={currentVideoId} 
-            onComplete={handleProcessingComplete}
-          />
-        )}
-        
-        {currentState === "study" && currentVideoId && (
-          <StudyInterface 
-            videoId={currentVideoId}
-            onComplete={handleStudyComplete}
-          />
-        )}
-        
-        {currentState === "completion" && currentVideoId && (
-          <CompletionSection 
-            videoId={currentVideoId}
-            onStartOver={handleStartOver}
-          />
-        )}
-      </main>
-      
-      {/* Floating Action Button */}
-      <div className="fixed bottom-6 right-6">
-        <button 
-          onClick={handleStartOver}
-          className="bg-primary text-white w-14 h-14 rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 flex items-center justify-center"
-        >
-          <i className="fas fa-plus text-xl"></i>
-        </button>
-      </div>
+
+      <LoginGate>
+        <main className="max-w-4xl mx-auto p-8">
+          {currentState === "upload" && (
+            <UploadSection onVideoUploaded={handleVideoUploaded} />
+          )}
+
+          {currentState === "processing" && currentVideoId && (
+            <ProcessingSection 
+              videoId={currentVideoId} 
+              onComplete={handleProcessingComplete}
+            />
+          )}
+
+          {currentState === "study" && currentVideoId && (
+            <StudyInterface 
+              videoId={currentVideoId}
+              onComplete={handleStudyComplete}
+            />
+          )}
+
+          {currentState === "completion" && (
+            <CompletionSection onStartOver={handleStartOver} />
+          )}
+        </main>
+      </LoginGate>
     </div>
   );
 }
