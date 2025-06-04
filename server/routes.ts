@@ -175,10 +175,13 @@ async function processVideo(videoId: number, filePath: string) {
     await new Promise(resolve => setTimeout(resolve, 1000));
     await storage.updateVideoStatus(videoId, "processing", 30);
 
-    // Simulate transcription (in real implementation, would extract audio and use Whisper)
-    const mockTranscription = `Welcome to this introduction to machine learning. Today we'll be covering the fundamental concepts that every data scientist should know. Machine learning is a subset of artificial intelligence that enables computers to learn and make decisions from data without being explicitly programmed for every possible scenario. There are three main types of machine learning: supervised learning, unsupervised learning, and reinforcement learning. Supervised learning uses labeled training data where the algorithm learns from input-output pairs to make predictions on new data. Common examples include classification and regression problems. Unsupervised learning works with unlabeled data to discover hidden patterns, structures, or relationships without predefined correct answers. Examples include clustering and dimensionality reduction. Reinforcement learning involves an agent learning to make decisions through trial and error by receiving rewards or penalties for its actions. This is commonly used in game playing and robotics applications.`;
+    // TODO: Implement real video processing
+    // 1. Extract audio from video using FFmpeg: ffmpeg -i video.mp4 -vn -acodec pcm_s16le -ar 44100 -ac 2 audio.wav
+    // 2. Use OpenAI Whisper API for transcription: openai.audio.transcriptions.create()
+    // For now, using a placeholder that indicates the limitation
+    const placeholderTranscription = `This video content has not been processed yet. To generate accurate flashcards that match your video content, you need to implement: 1) Audio extraction from the uploaded video file using FFmpeg, 2) Speech-to-text transcription using OpenAI Whisper API or similar service, 3) Content analysis to extract key educational points. Currently showing generic educational content as an example.`;
     
-    await storage.updateVideoTranscription(videoId, mockTranscription);
+    await storage.updateVideoTranscription(videoId, placeholderTranscription);
     await storage.updateVideoStatus(videoId, "processing", 60);
 
     // Generate flashcards using OpenAI
@@ -219,20 +222,13 @@ async function processVideoFromUrl(videoId: number, videoUrl: string) {
     await new Promise(resolve => setTimeout(resolve, 1500));
     await storage.updateVideoStatus(videoId, "processing", 30);
 
-    // Generate transcription based on video URL content
-    let mockTranscription = '';
+    // TODO: Implement real video URL processing
+    // For YouTube URLs: Use youtube-transcript-api or YouTube Data API
+    // For other URLs: Download video, extract audio, and transcribe
+    // For now, indicating this is placeholder content
+    const placeholderTranscription = `This video content from ${videoUrl} has not been processed yet. To generate accurate flashcards that match your specific video content, you need to implement: 1) Video download or streaming, 2) Audio extraction, 3) Speech-to-text transcription, 4) Content analysis. Currently showing generic educational content as placeholder.`;
     
-    if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
-      mockTranscription = `This is a YouTube educational video covering important concepts in web development and programming. The video discusses modern JavaScript frameworks like React, Vue, and Angular, explaining their core differences and use cases. Key topics include component-based architecture, state management, virtual DOM concepts, and the importance of choosing the right framework for your project. The presenter explains how React uses JSX syntax and hooks for state management, while Vue provides a more template-based approach with its reactive data system. Angular is presented as a full-featured framework with TypeScript integration and dependency injection. The video also covers best practices for component design, performance optimization techniques, and testing strategies for modern web applications.`;
-    } else if (videoUrl.includes('vimeo.com')) {
-      mockTranscription = `This Vimeo educational content focuses on advanced design principles and user experience fundamentals. The video covers color theory, typography selection, and layout composition for modern web interfaces. Key concepts include visual hierarchy, white space utilization, and accessibility considerations in design. The presenter demonstrates how to create cohesive design systems, implement responsive design patterns, and ensure cross-browser compatibility. Important topics include user research methodologies, wireframing techniques, and prototyping tools. The video also addresses performance implications of design decisions, image optimization strategies, and the importance of mobile-first design approaches in today's digital landscape.`;
-    } else if (videoUrl.includes('bigbuckbunny') || videoUrl.includes('sample') || videoUrl.includes('demo')) {
-      mockTranscription = `This is a demonstration video showcasing video processing capabilities and educational content generation. The video explains how modern AI systems can automatically extract meaningful information from video content to create learning materials. Key topics include speech recognition technology, natural language processing for content analysis, and automated question generation algorithms. The demonstration covers the technical pipeline from video input to flashcard output, including audio extraction, transcription accuracy considerations, and content summarization techniques. The video also discusses applications in educational technology, personalized learning systems, and adaptive assessment tools.`;
-    } else {
-      mockTranscription = `This educational video content covers fundamental concepts in computer science and software engineering. The video discusses algorithm design, data structures, and problem-solving methodologies essential for programming. Key topics include time complexity analysis, space optimization, and choosing appropriate data structures for different use cases. The presenter explains sorting algorithms, searching techniques, and graph traversal methods with practical examples. The video also covers software design patterns, code organization principles, and debugging strategies. Important concepts include object-oriented programming, functional programming paradigms, and best practices for writing maintainable, scalable code.`;
-    }
-    
-    await storage.updateVideoTranscription(videoId, mockTranscription);
+    await storage.updateVideoTranscription(videoId, placeholderTranscription);
     await storage.updateVideoStatus(videoId, "processing", 60);
 
     // Generate flashcards using OpenAI
