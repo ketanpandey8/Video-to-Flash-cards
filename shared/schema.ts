@@ -1,4 +1,4 @@
-Adding the videoUrl field to the video schema.
+// Adding the videoUrl field to the video schema.
 ```
 ```replit_final_file
 import { pgTable, text, serial, integer, boolean, json } from "drizzle-orm/pg-core";
