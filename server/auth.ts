@@ -32,14 +32,35 @@ export function extractUserFromHeaders(req: Request): AuthenticatedUser | null {
     return null;
   }
 
+  let parsedRoles: string[] = [];
+  let parsedTeams: string[] = [];
+
+  try {
+    if (roles) {
+      parsedRoles = JSON.parse(roles);
+    }
+  } catch (error) {
+    console.warn('Failed to parse roles header:', roles);
+    parsedRoles = [];
+  }
+
+  try {
+    if (teams) {
+      parsedTeams = JSON.parse(teams);
+    }
+  } catch (error) {
+    console.warn('Failed to parse teams header:', teams);
+    parsedTeams = [];
+  }
+
   return {
     id: userId,
     name: userName,
     profileImage,
     bio,
     url,
-    roles: roles ? JSON.parse(roles) : [],
-    teams: teams ? JSON.parse(teams) : []
+    roles: parsedRoles,
+    teams: parsedTeams
   };
 }
 
