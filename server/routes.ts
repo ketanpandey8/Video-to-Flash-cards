@@ -176,13 +176,50 @@ async function processVideo(videoId: number, filePath: string) {
     await new Promise(resolve => setTimeout(resolve, 1000));
     await storage.updateVideoStatus(videoId, "processing", 30);
 
-    // TODO: Implement real video processing
-    // 1. Extract audio from video using FFmpeg: ffmpeg -i video.mp4 -vn -acodec pcm_s16le -ar 44100 -ac 2 audio.wav
-    // 2. Use OpenAI Whisper API for transcription: openai.audio.transcriptions.create()
-    // For now, using a placeholder that indicates the limitation
-    const placeholderTranscription = `This video content has not been processed yet. To generate accurate flashcards that match your video content, you need to implement: 1) Audio extraction from the uploaded video file using FFmpeg, 2) Speech-to-text transcription using OpenAI Whisper API or similar service, 3) Content analysis to extract key educational points. Currently showing generic educational content as an example.`;
+    // Extract audio from video using FFmpeg
+    const audioPath = `uploads/audio_${videoId}.wav`;
+    const ffmpegCommand = `ffmpeg -i "${filePath}" -vn -acodec pcm_s16le -ar 16000 -ac 1 "${audioPath}"`;
+    
+    try {
+      const { exec } = require('child_process');
+      await new Promise((resolve, reject) => {
+        exec(ffmpegCommand, (error: any, stdout: any, stderr: any) => {
+          if (error) {
+            console.error('FFmpeg error:', error);
+            reject(error);
+          } else {
+            resolve(stdout);
+          }
+        });
+      });
 
-    await storage.updateVideoTranscription(videoId, placeholderTranscription);
+      // Transcribe audio using OpenAI Whisper
+      const fs = require('fs');
+      const audioFile = fs.createReadStream(audioPath);
+      
+      const openai = new (require('openai').default)({
+        apiKey: process.env.OPEN_API_VIDTUT || "default_key"
+      });
+
+      const transcription = await openai.audio.transcriptions.create({
+        file: audioFile,
+        model: "whisper-1",
+        language: "en"
+      });
+
+      await storage.updateVideoTranscription(videoId, transcription.text);
+
+      // Clean up audio file
+      fs.unlink(audioPath, (err: any) => {
+        if (err) console.error('Failed to delete audio file:', err);
+      });
+
+    } catch (error) {
+      console.error('Audio processing error:', error);
+      // Fallback to placeholder if processing fails
+      const fallbackTranscription = `Audio processing failed for this video. This could be due to: 1) FFmpeg not being installed, 2) Invalid audio format, 3) OpenAI API issues. Please check your setup and try again.`;
+      await storage.updateVideoTranscription(videoId, fallbackTranscription);
+    }
     await storage.updateVideoStatus(videoId, "processing", 60);
 
     // Generate flashcards using OpenAI with actual transcription
@@ -232,13 +269,78 @@ async function processVideoFromUrl(videoId: number, videoUrl: string) {
     await new Promise(resolve => setTimeout(resolve, 1500));
     await storage.updateVideoStatus(videoId, "processing", 30);
 
-    // TODO: Implement real video URL processing
-    // For YouTube URLs: Use youtube-transcript-api or YouTube Data API
-    // For other URLs: Download video, extract audio, and transcribe
-    // For now, indicating this is placeholder content
-    const placeholderTranscription = `This video content from ${videoUrl} has not been processed yet. To generate accurate flashcards that match your specific video content, you need to implement: 1) Video download or streaming, 2) Audio extraction, 3) Speech-to-text transcription, 4) Content analysis. Currently showing generic educational content as placeholder.`;
+    // Process video from URL
+    try {
+      let transcriptionText = '';
 
-    await storage.updateVideoTranscription(videoId, placeholderTranscription);
+      // Handle YouTube URLs with yt-dlp
+      if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
+        const { exec } = require('child_process');
+        const tempVideoPath = `uploads/temp_video_${videoId}.mp4`;
+        const audioPath = `uploads/audio_${videoId}.wav`;
+
+        // Download video using yt-dlp
+        const downloadCommand = `yt-dlp -f "best[height<=720]" -o "${tempVideoPath}" "${videoUrl}"`;
+        await new Promise((resolve, reject) => {
+          exec(downloadCommand, (error: any, stdout: any, stderr: any) => {
+            if (error) {
+              console.error('yt-dlp error:', error);
+              reject(error);
+            } else {
+              resolve(stdout);
+            }
+          });
+        });
+
+        // Extract audio
+        const ffmpegCommand = `ffmpeg -i "${tempVideoPath}" -vn -acodec pcm_s16le -ar 16000 -ac 1 "${audioPath}"`;
+        await new Promise((resolve, reject) => {
+          exec(ffmpegCommand, (error: any, stdout: any, stderr: any) => {
+            if (error) {
+              console.error('FFmpeg error:', error);
+              reject(error);
+            } else {
+              resolve(stdout);
+            }
+          });
+        });
+
+        // Transcribe with Whisper
+        const fs = require('fs');
+        const audioFile = fs.createReadStream(audioPath);
+        
+        const openai = new (require('openai').default)({
+          apiKey: process.env.OPEN_API_VIDTUT || "default_key"
+        });
+
+        const transcription = await openai.audio.transcriptions.create({
+          file: audioFile,
+          model: "whisper-1",
+          language: "en"
+        });
+
+        transcriptionText = transcription.text;
+
+        // Clean up temporary files
+        fs.unlink(tempVideoPath, (err: any) => {
+          if (err) console.error('Failed to delete temp video:', err);
+        });
+        fs.unlink(audioPath, (err: any) => {
+          if (err) console.error('Failed to delete audio file:', err);
+        });
+
+      } else {
+        // For other video URLs, attempt direct processing
+        transcriptionText = `Video URL processing for ${videoUrl} requires additional setup. Currently, only YouTube URLs are supported with yt-dlp. For other video sources, please upload the video file directly.`;
+      }
+
+      await storage.updateVideoTranscription(videoId, transcriptionText);
+
+    } catch (error) {
+      console.error('Video URL processing error:', error);
+      const fallbackTranscription = `Failed to process video from ${videoUrl}. This could be due to: 1) Missing yt-dlp or FFmpeg, 2) Video not accessible, 3) Network issues, 4) OpenAI API problems. Please try uploading the video file directly instead.`;
+      await storage.updateVideoTranscription(videoId, fallbackTranscription);
+    }
     await storage.updateVideoStatus(videoId, "processing", 60);
 
     // Generate flashcards using OpenAI with actual transcription
