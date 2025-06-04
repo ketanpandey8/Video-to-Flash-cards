@@ -1,3 +1,6 @@
+/* Font Awesome CDN */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -45,6 +48,7 @@
   --destructive: 0 62% 30%; /* #DC2626 */
   --destructive-foreground: 210 40% 98%; /* #F1F5F9 */
   --ring: 213 93% 58%; /* #2563EB */
+  --radius: 0.5rem;
 }
 
 @layer base {
@@ -57,9 +61,6 @@
     font-family: 'Inter', system-ui, sans-serif;
   }
 }
-
-/* Font Awesome CDN */
-@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
 
 /* Custom styles for 3D card flip */
 .preserve-3d {

@@ -206,7 +206,7 @@ async function processVideo(videoId: number, filePath: string) {
       console.error('Video transcription error:', error);
       throw new Error(`Failed to transcribe video: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-    
+
     await storage.updateVideoStatus(videoId, "processing", 60);
 
     // Generate flashcards using OpenAI with actual transcription
@@ -217,7 +217,13 @@ async function processVideo(videoId: number, filePath: string) {
     }
 
     // Validate transcription quality before generating flashcards
-    if (video.transcription.length < 50 || video.transcription.includes("processing failed") || video.transcription.includes("error")) {
+    if (!video.transcription || 
+        video.transcription.length < 100 || 
+        video.transcription.includes("processing failed") || 
+        video.transcription.includes("error") ||
+        video.transcription.includes("Failed to") ||
+        video.transcription.toLowerCase().includes("api key") ||
+        video.transcription.toLowerCase().includes("quota exceeded")) {
       throw new Error("Transcription quality is too low for meaningful flashcard generation");
     }
 
@@ -289,7 +295,7 @@ async function processVideoFromUrl(videoId: number, videoUrl: string) {
       console.error('Video URL processing error:', error);
       throw new Error(`Failed to process video URL: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-    
+
     await storage.updateVideoStatus(videoId, "processing", 60);
 
     // Generate flashcards using OpenAI with actual transcription
@@ -300,7 +306,13 @@ async function processVideoFromUrl(videoId: number, videoUrl: string) {
     }
 
     // Validate transcription quality before generating flashcards
-    if (video.transcription.length < 50 || video.transcription.includes("processing failed") || video.transcription.includes("error")) {
+    if (!video.transcription || 
+        video.transcription.length < 100 || 
+        video.transcription.includes("processing failed") || 
+        video.transcription.includes("error") ||
+        video.transcription.includes("Failed to") ||
+        video.transcription.toLowerCase().includes("api key") ||
+        video.transcription.toLowerCase().includes("quota exceeded")) {
       throw new Error("Transcription quality is too low for meaningful flashcard generation");
     }
 

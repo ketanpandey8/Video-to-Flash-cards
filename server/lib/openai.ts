@@ -12,12 +12,27 @@ export interface FlashcardPair {
 
 export async function generateFlashcards(transcription: string): Promise<FlashcardPair[]> {
   // Validate input transcription
-  if (!transcription || transcription.length < 50) {
+  if (!transcription || transcription.length < 100) {
     throw new Error("Transcription is too short to generate meaningful flashcards");
   }
   
-  if (transcription.toLowerCase().includes("error") || transcription.toLowerCase().includes("failed")) {
-    throw new Error("Cannot generate flashcards from error messages or failed transcriptions");
+  if (transcription.toLowerCase().includes("error") || 
+      transcription.toLowerCase().includes("failed") ||
+      transcription.toLowerCase().includes("api key") ||
+      transcription.toLowerCase().includes("quota") ||
+      transcription.toLowerCase().includes("billing") ||
+      transcription.length > 50000) {
+    throw new Error("Cannot generate flashcards from error messages or invalid transcriptions");
+  }
+
+  // Check if transcription contains actual educational content
+  const educationalKeywords = ['learn', 'understand', 'concept', 'definition', 'explain', 'example', 'important', 'key', 'topic', 'subject'];
+  const hasEducationalContent = educationalKeywords.some(keyword => 
+    transcription.toLowerCase().includes(keyword)
+  );
+  
+  if (!hasEducationalContent) {
+    throw new Error("Transcription does not appear to contain educational content suitable for flashcards");
   }
 
   try {
@@ -26,21 +41,28 @@ export async function generateFlashcards(transcription: string): Promise<Flashca
       messages: [
         {
           role: "system",
-          content: `You are an expert educational content creator. Generate 8-10 high-quality flashcard question-answer pairs from the provided video transcription. 
+          content: `You are an expert educational content creator. Generate exactly 8-10 high-quality flashcard question-answer pairs from the provided video transcription. 
 
-Requirements:
-- Focus on key concepts, definitions, and important facts
-- Questions should test understanding, not just memorization
+CRITICAL REQUIREMENTS:
+- Questions MUST be directly based on the specific content provided
+- Do NOT create generic or unrelated questions
+- Focus on key concepts, definitions, and important facts from the actual transcription
+- Questions should test understanding of the specific material presented
 - Answers should be clear, concise, and educational
-- Cover different aspects of the content
-- Use varied question types (what, how, why, compare, etc.)
+- Cover different aspects of the actual content provided
+- Use varied question types (what, how, why, compare, etc.) but keep them relevant
+
+VALIDATION:
+- Each question must reference specific information from the transcription
+- Answers must be factually accurate to the content provided
+- Do not add external knowledge not mentioned in the transcription
 
 Respond with JSON in this exact format:
 {
   "flashcards": [
     {
-      "question": "What is the main difference between supervised and unsupervised learning?",
-      "answer": "Supervised learning uses labeled training data where the algorithm learns from input-output pairs to make predictions on new data. Unsupervised learning works with unlabeled data to discover hidden patterns, structures, or relationships without predefined correct answers."
+      "question": "Based on the content, what is [specific concept from transcription]?",
+      "answer": "According to the material, [specific answer from transcription content]"
     }
   ]
 }`

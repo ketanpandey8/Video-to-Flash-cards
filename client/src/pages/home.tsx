@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Header from "@/components/header";
-import LoginGate from "@/components/login-gate";
+import { useAuth } from "../contexts/auth-context";
+import LoginGate from "../components/login-gate";
 import UploadSection from "@/components/upload-section";
 import ProcessingSection from "@/components/processing-section";
 import StudyInterface from "@/components/study-interface";
