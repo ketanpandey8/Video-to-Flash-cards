@@ -24,7 +24,7 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  
+
   // Upload video endpoint
   app.post("/api/videos/upload", upload.single('video'), async (req, res) => {
     try {
@@ -100,7 +100,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const videoId = parseInt(req.params.id);
       const video = await storage.getVideo(videoId);
-      
+
       if (!video) {
         return res.status(404).json({ message: "Video not found" });
       }
@@ -128,10 +128,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/videos/:id/study-session", async (req, res) => {
     try {
       const videoId = parseInt(req.params.id);
-      
+
       // Check if study session already exists
       let session = await storage.getStudySessionByVideoId(videoId);
-      
+
       if (!session) {
         const sessionData = { videoId };
         const validatedData = insertStudySessionSchema.parse(sessionData);
@@ -150,10 +150,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const sessionId = parseInt(req.params.id);
       const updates = req.body;
-      
+
       await storage.updateStudySession(sessionId, updates);
       const session = await storage.getStudySession(sessionId);
-      
+
       res.json({ session });
     } catch (error) {
       console.error('Update study session error:', error);
@@ -180,12 +180,13 @@ async function processVideo(videoId: number, filePath: string) {
     // 2. Use OpenAI Whisper API for transcription: openai.audio.transcriptions.create()
     // For now, using a placeholder that indicates the limitation
     const placeholderTranscription = `This video content has not been processed yet. To generate accurate flashcards that match your video content, you need to implement: 1) Audio extraction from the uploaded video file using FFmpeg, 2) Speech-to-text transcription using OpenAI Whisper API or similar service, 3) Content analysis to extract key educational points. Currently showing generic educational content as an example.`;
-    
+
     await storage.updateVideoTranscription(videoId, placeholderTranscription);
     await storage.updateVideoStatus(videoId, "processing", 60);
 
     // Generate flashcards using OpenAI
     await new Promise(resolve => setTimeout(resolve, 1000));
+    const mockTranscription = "This is a sample educational video about machine learning. Machine learning is a subset of artificial intelligence that enables computers to learn and make decisions from data without being explicitly programmed for every possible scenario. There are three main types of machine learning: supervised learning, unsupervised learning, and reinforcement learning.";
     const flashcards = await generateFlashcards(mockTranscription);
     await storage.updateVideoStatus(videoId, "processing", 80);
 
@@ -227,12 +228,13 @@ async function processVideoFromUrl(videoId: number, videoUrl: string) {
     // For other URLs: Download video, extract audio, and transcribe
     // For now, indicating this is placeholder content
     const placeholderTranscription = `This video content from ${videoUrl} has not been processed yet. To generate accurate flashcards that match your specific video content, you need to implement: 1) Video download or streaming, 2) Audio extraction, 3) Speech-to-text transcription, 4) Content analysis. Currently showing generic educational content as placeholder.`;
-    
+
     await storage.updateVideoTranscription(videoId, placeholderTranscription);
     await storage.updateVideoStatus(videoId, "processing", 60);
 
     // Generate flashcards using OpenAI
     await new Promise(resolve => setTimeout(resolve, 1000));
+    const mockTranscription = "This is a sample educational video about machine learning. Machine learning is a subset of artificial intelligence that enables computers to learn and make decisions from data without being explicitly programmed for every possible scenario. There are three main types of machine learning: supervised learning, unsupervised learning, and reinforcement learning.";
     const flashcards = await generateFlashcards(mockTranscription);
     await storage.updateVideoStatus(videoId, "processing", 80);
 
